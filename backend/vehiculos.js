@@ -1,4 +1,3 @@
-
 import express from "express";
 import { db } from "./db.js";
 import {
@@ -10,6 +9,10 @@ import {
 } from "./validaciones.js";
 
 const router = express.Router();
+
+// La columna en la base se llama `año`; se entrega al frontend como "anio"
+const COLUMNAS =
+  "v.id, v.marca, v.modelo, v.patente, v.`año` AS anio, v.capacidad_carga";
 
 // GET para entregar listado de vehículos
 router.get(
@@ -39,18 +42,16 @@ router.get(
     }
 
     if (anioMin !== undefined) {
-      filtros.push("v.anio >= ?");
+      filtros.push("v.`año` >= ?");
       parametros.push(Number(anioMin));
     }
 
     if (anioMax !== undefined) {
-      filtros.push("v.anio <= ?");
+      filtros.push("v.`año` <= ?");
       parametros.push(Number(anioMax));
     }
 
-    let sql =
-      "SELECT v.id, v.marca, v.modelo, v.patente, v.anio, v.capacidad_carga " +
-      "FROM vehiculos v";
+    let sql = `SELECT ${COLUMNAS} FROM vehiculos v`;
 
     if (filtros.length > 0) {
       sql += " WHERE " + filtros.join(" AND ");
@@ -61,7 +62,7 @@ router.get(
 
     const [vehiculos] = await db.execute(sql, parametros);
 
-    res.send(vehiculos);
+    res.json(vehiculos);
   },
 );
 
@@ -74,18 +75,16 @@ router.get(
   async (req, res) => {
     const id = Number(req.params.id);
 
-    const sql =
-      "SELECT v.id, v.marca, v.modelo, v.patente, v.anio, v.capacidad_carga " +
-      "FROM vehiculos v " +
-      "WHERE v.id = ?";
-
-    const [vehiculos] = await db.execute(sql, [id]);
+    const [vehiculos] = await db.execute(
+      `SELECT ${COLUMNAS} FROM vehiculos v WHERE v.id = ?`,
+      [id],
+    );
 
     if (vehiculos.length === 0) {
-      return res.status(404).send("Vehículo no encontrado");
+      return res.status(404).json({ error: "Vehículo no encontrado" });
     }
 
-    res.send(vehiculos[0]);
+    res.json(vehiculos[0]);
   },
 );
 
@@ -99,11 +98,11 @@ router.post(
     const { marca, modelo, patente, anio, capacidad_carga } = req.body;
 
     const [result] = await db.execute(
-      "INSERT INTO vehiculos (marca, modelo, patente, anio, capacidad_carga) VALUES (?, ?, ?, ?, ?)",
+      "INSERT INTO vehiculos (marca, modelo, patente, `año`, capacidad_carga) VALUES (?, ?, ?, ?, ?)",
       [marca, modelo, patente, anio, capacidad_carga],
     );
 
-    res.status(201).send({
+    res.status(201).json({
       id: result.insertId,
       marca,
       modelo,
@@ -127,22 +126,15 @@ router.put(
     const { marca, modelo, patente, anio, capacidad_carga } = req.body;
 
     const [result] = await db.execute(
-      "UPDATE vehiculos SET marca = ?, modelo = ?, patente = ?, anio = ?, capacidad_carga = ? WHERE id = ?",
+      "UPDATE vehiculos SET marca = ?, modelo = ?, patente = ?, `año` = ?, capacidad_carga = ? WHERE id = ?",
       [marca, modelo, patente, anio, capacidad_carga, id],
     );
 
     if (result.affectedRows === 0) {
-      return res.status(404).send("Vehículo no encontrado");
+      return res.status(404).json({ error: "Vehículo no encontrado" });
     }
 
-    res.send({
-      id,
-      marca,
-      modelo,
-      patente,
-      anio,
-      capacidad_carga,
-    });
+    res.json({ id, marca, modelo, patente, anio, capacidad_carga });
   },
 );
 
@@ -155,16 +147,15 @@ router.delete(
   async (req, res) => {
     const id = Number(req.params.id);
 
-    const [result] = await db.execute(
-      "DELETE FROM vehiculos WHERE id = ?",
-      [id],
-    );
+    const [result] = await db.execute("DELETE FROM vehiculos WHERE id = ?", [
+      id,
+    ]);
 
     if (result.affectedRows === 0) {
-      return res.status(404).send("Vehículo no encontrado");
+      return res.status(404).json({ error: "Vehículo no encontrado" });
     }
 
-    res.send("Vehículo eliminado correctamente");
+    res.json({ mensaje: "Vehículo eliminado correctamente" });
   },
 );
 
