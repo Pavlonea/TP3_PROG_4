@@ -1,0 +1,97 @@
+@host = http://localhost:3000
+
+### Login (guarda el token)
+# @name login
+POST {{host}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "ana@example.com",
+  "password": "secreto123"
+}
+
+###
+@token = {{login.response.body.token}}
+
+### Historial completo
+GET {{host}}/viajes
+Authorization: Bearer {{token}}
+
+### Historial por vehículo
+GET {{host}}/viajes?vehiculo_id=1
+Authorization: Bearer {{token}}
+
+### Historial por conductor
+GET {{host}}/viajes?conductor_id=1
+Authorization: Bearer {{token}}
+
+### Historial por rango de fechas
+GET {{host}}/viajes?desde=2026-01-01&hasta=2026-12-31
+Authorization: Bearer {{token}}
+
+### Total de kilómetros por vehículo
+GET {{host}}/viajes/kilometros?vehiculo_id=1
+Authorization: Bearer {{token}}
+
+### Total de kilómetros por conductor
+GET {{host}}/viajes/kilometros?conductor_id=1
+Authorization: Bearer {{token}}
+
+### Kilómetros sin filtro (400)
+GET {{host}}/viajes/kilometros
+Authorization: Bearer {{token}}
+
+### Detalle
+GET {{host}}/viajes/1
+Authorization: Bearer {{token}}
+
+### Registrar viaje
+POST {{host}}/viajes
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "vehiculo_id": 12,
+  "conductor_id": 1,
+  "fecha_salida": "2026-11-10",
+  "fecha_llegada": "2026-11-11",
+  "origen": "La Rioja",
+  "destino": "Córdoba",
+  "kilometros": 100,
+  "observaciones": "Entrega sin novedades"
+}
+
+### Viaje inválido: llegada antes de salida (400)
+POST {{host}}/viajes
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "vehiculo_id": 1,
+  "conductor_id": 1,
+  "fecha_salida": "2026-11-10",
+  "fecha_llegada": "2026-11-05",
+  "origen": "La Rioja",
+  "destino": "Córdoba",
+  "kilometros": 450
+}
+
+### Modificar viaje
+PUT {{host}}/viajes/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "vehiculo_id": 1,
+  "conductor_id": 1,
+  "fecha_salida": "2026-11-10",
+  "fecha_llegada": "2026-11-10",
+  "origen": "La Rioja",
+  "destino": "Córdoba",
+  "kilometros": 455,
+  "observaciones": "Demora por tránsito"
+}
+
+### Eliminar viaje
+DELETE {{host}}/viajes/1
+Authorization: Bearer {{token}}

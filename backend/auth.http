@@ -1,0 +1,39 @@
+@host = http://localhost:3000
+
+### Registrar usuario
+POST {{host}}/auth/register
+Content-Type: application/json
+
+{
+  "nombre": "Ana Pérez",
+  "email": "ana@example.com",
+  "password": "secreto123"
+}
+
+### Registro inválido (400)
+POST {{host}}/auth/register
+Content-Type: application/json
+
+{
+  "nombre": "",
+  "email": "no-es-un-email",
+  "password": "123"
+}
+
+### Login
+POST {{host}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "ana@example.com",
+  "password": "secreto123"
+}
+
+### Login con credenciales incorrectas (401)
+POST {{host}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "ana@example.com",
+  "password": "incorrecta"
+}

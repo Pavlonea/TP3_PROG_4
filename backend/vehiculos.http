@@ -1,0 +1,76 @@
+@host = http://localhost:3000
+
+### Login (guarda el token)
+# @name login
+POST {{host}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "ana@example.com",
+  "password": "secreto123"
+}
+
+###
+@token = {{login.response.body.token}}
+
+### Listar vehículos
+GET {{host}}/vehiculos
+Authorization: Bearer {{token}}
+
+### Listar con filtros
+GET {{host}}/vehiculos?marca=ford&anioMin=2015&anioMax=2024
+Authorization: Bearer {{token}}
+
+### Sin token (401)
+GET {{host}}/vehiculos
+
+### Detalle
+GET {{host}}/vehiculos/12
+Authorization: Bearer {{token}}
+
+### Crear
+POST {{host}}/vehiculos
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "marca": "Mercedes-Benz",
+  "modelo": "Sprinter",
+  "patente": "AB123CD",
+  "anio": 2022,
+  "capacidad_carga": 1500
+}
+
+### Crear inválido (400)
+POST {{host}}/vehiculos
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "marca": "",
+  "modelo": "Sprinter",
+  "patente": "XXXX",
+  "anio": 1800,
+  "capacidad_carga": -5
+}
+
+### Modificar
+PUT {{host}}/vehiculos/12
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "marca": "Mercedes-Benz",
+  "modelo": "Sprinter 515",
+  "patente": "AB123CD",
+  "anio": 2022,
+  "capacidad_carga": 1800
+}
+
+### No existe (404)
+GET {{host}}/vehiculos/9999
+Authorization: Bearer {{token}}
+
+### Eliminar
+DELETE {{host}}/vehiculos/5
+Authorization: Bearer {{token}}
