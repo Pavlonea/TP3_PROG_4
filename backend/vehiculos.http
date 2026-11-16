@@ -72,5 +72,5 @@ GET {{host}}/vehiculos/9999
 Authorization: Bearer {{token}}
 
 ### Eliminar
-DELETE {{host}}/vehiculos/5
+DELETE {{host}}/vehiculos/12
 Authorization: Bearer {{token}}
