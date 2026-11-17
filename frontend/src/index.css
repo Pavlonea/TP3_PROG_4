@@ -96,3 +96,24 @@ nav li.active a {
   color: red;
   margin-top: 0;
 }
+
+button {
+  margin-right: 5px;
+  margin-bottom: 5px;
+  cursor: pointer;
+}
+
+nav button {
+  margin: 0;
+}
+
+input,
+select {
+  padding: 4px;
+  min-width: 220px;
+}
+
+table {
+  width: 100%;
+  font-size: 0.9rem;
+}
