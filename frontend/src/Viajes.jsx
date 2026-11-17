@@ -33,31 +33,56 @@ export function Viajes() {
   const [viajes, setViajes] = useState([]);
   const [form, setForm] = useState(FORM_VACIO);
   const [error, setError] = useState(null);
+  const [filtroVehiculo, setFiltroVehiculo] = useState("");
+  const [filtroConductor, setFiltroConductor] = useState("");
 
-  const cargarDatos = useCallback(async () => {
+  const cargarListas = useCallback(async () => {
     try {
-      const [resVehiculos, resConductores, resViajes] = await Promise.all([
+      const [resVehiculos, resConductores] = await Promise.all([
         fetchAuth(`${API_URL}/vehiculos`),
         fetchAuth(`${API_URL}/conductores`),
-        fetchAuth(`${API_URL}/viajes`),
       ]);
 
-      if (!resVehiculos.ok || !resConductores.ok || !resViajes.ok) {
+      if (!resVehiculos.ok || !resConductores.ok) {
         setError("No se pudieron cargar los datos");
         return;
       }
 
       setVehiculos(await resVehiculos.json());
       setConductores(await resConductores.json());
-      setViajes(await resViajes.json());
     } catch {
       setError("No se pudo conectar con el servidor");
     }
   }, [fetchAuth]);
 
+  const cargarViajes = useCallback(async () => {
+    const params = new URLSearchParams();
+    if (filtroVehiculo) params.append("vehiculo_id", filtroVehiculo);
+    if (filtroConductor) params.append("conductor_id", filtroConductor);
+
+    try {
+      const response = await fetchAuth(`${API_URL}/viajes?${params}`);
+
+      if (!response.ok) {
+        setError("No se pudo cargar el historial");
+        return;
+      }
+
+      setViajes(await response.json());
+    } catch {
+      setError("No se pudo conectar con el servidor");
+    }
+  }, [fetchAuth, filtroVehiculo, filtroConductor]);
+
   useEffect(() => {
-    cargarDatos();
-  }, [cargarDatos]);
+    cargarListas();
+  }, [cargarListas]);
+
+  useEffect(() => {
+    cargarViajes();
+  }, [cargarViajes]);
+
+  const totalKm = viajes.reduce((suma, v) => suma + Number(v.kilometros), 0);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -123,7 +148,7 @@ export function Viajes() {
       }
 
       setForm(FORM_VACIO);
-      cargarDatos();
+      cargarViajes();
     } catch {
       setError("No se pudo conectar con el servidor");
     }
@@ -224,6 +249,40 @@ export function Viajes() {
       </form>
 
       <h3>Historial de viajes</h3>
+
+      <label htmlFor="filtroVehiculo">Filtrar por vehículo:</label>
+      <select
+        id="filtroVehiculo"
+        value={filtroVehiculo}
+        onChange={(e) => setFiltroVehiculo(e.target.value)}
+      >
+        <option value="">Todos</option>
+        {vehiculos.map((v) => (
+          <option key={v.id} value={v.id}>
+            {v.patente} - {v.marca} {v.modelo}
+          </option>
+        ))}
+      </select>
+
+      <label htmlFor="filtroConductor">Filtrar por conductor:</label>
+      <select
+        id="filtroConductor"
+        value={filtroConductor}
+        onChange={(e) => setFiltroConductor(e.target.value)}
+      >
+        <option value="">Todos</option>
+        {conductores.map((c) => (
+          <option key={c.id} value={c.id}>
+            {c.apellido}, {c.nombre}
+          </option>
+        ))}
+      </select>
+
+      <p>
+        <strong>Total de kilómetros: {totalKm}</strong> ({viajes.length}{" "}
+        viajes)
+      </p>
+
       {viajes.length === 0 ? (
         <p>No hay viajes registrados</p>
       ) : (
