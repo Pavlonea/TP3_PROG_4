@@ -1,7 +1,17 @@
-import { Link, Outlet, useLocation } from "react-router";
+import { Link, Outlet, useLocation, useNavigate } from "react-router";
+import { useAuth } from "./Auth";
 
 export function Layout() {
   const { pathname } = useLocation();
+  const { isAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const activo = (ruta) => (pathname.startsWith(ruta) ? "active" : "");
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
 
   return (
     <main>
@@ -10,18 +20,32 @@ export function Layout() {
           <li className={pathname === "/" ? "active" : ""}>
             <Link to="/">Inicio</Link>
           </li>
-          <li className={pathname.startsWith("/vehiculos") ? "active" : ""}>
-            <Link to="/vehiculos">Vehículos</Link>
-          </li>
-          <li className={pathname.startsWith("/conductores") ? "active" : ""}>
-            <Link to="/conductores">Conductores</Link>
-          </li>
-          <li className={pathname.startsWith("/viajes") ? "active" : ""}>
-            <Link to="/viajes">Viajes</Link>
-          </li>
-          <li className={pathname.startsWith("/login") ? "active" : ""}>
-            <Link to="/login">Ingresar</Link>
-          </li>
+
+          {isAuthenticated ? (
+            <>
+              <li className={activo("/vehiculos")}>
+                <Link to="/vehiculos">Vehículos</Link>
+              </li>
+              <li className={activo("/conductores")}>
+                <Link to="/conductores">Conductores</Link>
+              </li>
+              <li className={activo("/viajes")}>
+                <Link to="/viajes">Viajes</Link>
+              </li>
+              <li>
+                <button onClick={handleLogout}>Salir</button>
+              </li>
+            </>
+          ) : (
+            <>
+              <li className={activo("/login")}>
+                <Link to="/login">Ingresar</Link>
+              </li>
+              <li className={activo("/registro")}>
+                <Link to="/registro">Registrarse</Link>
+              </li>
+            </>
+          )}
         </ul>
       </nav>
       <Outlet />
