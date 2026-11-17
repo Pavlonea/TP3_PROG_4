@@ -1,5 +1,3 @@
-function App() {
+export function Home() {
   return <h1>Gestión de transporte</h1>;
 }
-
-export default App;
